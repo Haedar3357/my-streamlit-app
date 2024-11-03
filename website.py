@@ -6,37 +6,28 @@ from pydrive.drive import GoogleDrive
 import tempfile
 import base64
 import datetime
+import os
+import json
 
 # تحديد تاريخ أدنى وحد أقصى
 min_date = datetime.date(1900, 1, 1)
 max_date = datetime.date.today()
 
 # إعداد الاتصال بـ Google Sheets و Google Drive
-scope = [
-    "https://spreadsheets.google.com/feeds",
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.file",
-    "https://www.googleapis.com/auth/drive"
-]
+scope = ["https://spreadsheets.google.com/feeds", 
+         'https://www.googleapis.com/auth/spreadsheets',
+         "https://www.googleapis.com/auth/drive.file", 
+         "https://www.googleapis.com/auth/drive"]
 
-# بناء بيانات الاعتماد من secrets
-secret = st.secrets["gcp_service_account"]
-credentials_info = {
-    "type": secret["type"],
-    "project_id": secret["project_id"],
-    "private_key_id": secret["private_key_id"],
-    "private_key": secret["private_key"].replace("\n", "\\n"),  # تأكد من استبدال علامات نهاية الأسطر
-    "client_email": secret["client_email"],
-    "client_id": secret["client_id"],
-    "auth_uri": secret["auth_uri"],
-    "token_uri": secret["token_uri"],
-    "auth_provider_x509_cert_url": secret["auth_provider_x509_cert_url"],
-    "client_x509_cert_url": secret["client_x509_cert_url"]
-}
+# قراءة بيانات الاعتماد من المتغير البيئي
+credentials_json = os.getenv('GCP_CREDENTIALS')
 
-# إنشاء كائن من بيانات الاعتماد
-credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_info, scope)
-gc = gspread.authorize(credentials)
+if credentials_json:
+    credentials_dict = json.loads(credentials_json)
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
+    gc = gspread.authorize(credentials)
+else:
+    st.error("لم يتم العثور على بيانات الاعتماد. تأكد من إعداد المتغير البيئي GCP_CREDENTIALS بشكل صحيح.")
 
 # فتح ملفات Google Sheet لكل قسم
 sh_employees = gc.open("بيانات الموظفين")
@@ -47,6 +38,7 @@ sh_service = gc.open("بيانات الخدمة")
 gauth = GoogleAuth()
 gauth.credentials = credentials
 drive = GoogleDrive(gauth)
+
 
 # دالة لرفع الملفات إلى Google Drive وإرجاع الروابط
 def upload_files(files):
