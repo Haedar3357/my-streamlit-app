@@ -18,7 +18,7 @@ scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
 credentials = ServiceAccountCredentials.from_json_keyfile_name(
-    'C:/Users/CISCOSTORE/Desktop/website/credentials.json', scope)
+    'credentials.json', scope)
 gc = gspread.authorize(credentials)
 
 # فتح ملفات Google Sheet لكل قسم
@@ -153,10 +153,10 @@ st.sidebar.title("التنقل بين الصفحات")
 page = st.sidebar.selectbox("اختر الصفحة", ["الصفحة الرئيسية", "إضافة بيانات الموظفين", "إضافة بيانات العقود", "إضافة بيانات العاملين بصفة شراء خدمات"])
 
 if page == "الصفحة الرئيسية":
-    add_background("C:/Users/CISCOSTORE/Desktop/website/background.jpg")
+    add_background("background.jpg")
 
     # الشعار والعنوان
-    logo_path = "C:/Users/CISCOSTORE/Desktop/website/logo.jpg"
+    logo_path = "logo.jpg"
     with open(logo_path, "rb") as img_file:
         logo_encoded = base64.b64encode(img_file.read()).decode()
     st.markdown(
