@@ -20,7 +20,7 @@ scope = ["https://spreadsheets.google.com/feeds",
          "https://www.googleapis.com/auth/drive"]
 
 # قراءة بيانات الاعتماد من المتغير البيئي
-credentials_json = os.getenv('GCP_CREDENTIALS')
+credentials_json = os.getenv('gcp_service_account')
 
 if credentials_json:
     credentials_dict = json.loads(credentials_json)
