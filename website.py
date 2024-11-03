@@ -12,13 +12,30 @@ min_date = datetime.date(1900, 1, 1)
 max_date = datetime.date.today()
 
 # إعداد الاتصال بـ Google Sheets و Google Drive
-scope = ["https://spreadsheets.google.com/feeds", 
-         'https://www.googleapis.com/auth/spreadsheets',
-         "https://www.googleapis.com/auth/drive.file", 
-         "https://www.googleapis.com/auth/drive"]
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive"
+]
 
-credentials = ServiceAccountCredentials.from_json_keyfile_name(
-    'credentials.json', scope)
+# بناء بيانات الاعتماد من secrets
+secret = st.secrets["gcp_service_account"]
+credentials_info = {
+    "type": secret["type"],
+    "project_id": secret["project_id"],
+    "private_key_id": secret["private_key_id"],
+    "private_key": secret["private_key"].replace("\n", "\\n"),  # تأكد من استبدال علامات نهاية الأسطر
+    "client_email": secret["client_email"],
+    "client_id": secret["client_id"],
+    "auth_uri": secret["auth_uri"],
+    "token_uri": secret["token_uri"],
+    "auth_provider_x509_cert_url": secret["auth_provider_x509_cert_url"],
+    "client_x509_cert_url": secret["client_x509_cert_url"]
+}
+
+# إنشاء كائن من بيانات الاعتماد
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_info, scope)
 gc = gspread.authorize(credentials)
 
 # فتح ملفات Google Sheet لكل قسم
