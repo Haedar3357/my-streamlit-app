@@ -13,27 +13,24 @@ import json
 min_date = datetime.date(1900, 1, 1)
 max_date = datetime.date.today()
 
-# إعداد الاتصال بـ Google Sheets و Google Drive
 scope = ["https://spreadsheets.google.com/feeds", 
-         'https://www.googleapis.com/auth/spreadsheets',
+         "https://www.googleapis.com/auth/spreadsheets",
          "https://www.googleapis.com/auth/drive.file", 
          "https://www.googleapis.com/auth/drive"]
 
-# قراءة بيانات الاعتماد من المتغير البيئي
-credentials_json = os.getenv('gcp_service_account')
-
-if credentials_json:
-    credentials_dict = json.loads(credentials_json)
+# قراءة بيانات الاعتماد من st.secrets
+try:
+    credentials_dict = st.secrets["gcp_service_account"]  # جلب بيانات الاعتماد مباشرة من Streamlit secrets
     credentials = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
     gc = gspread.authorize(credentials)
-else:
-    st.error("لم يتم العثور على بيانات الاعتماد. تأكد من إعداد المتغير البيئي GCP_CREDENTIALS بشكل صحيح.")
+    
+    # فتح ملفات Google Sheet لكل قسم
+    sh_employees = gc.open("بيانات الموظفين")
+    sh_contracts = gc.open("بيانات العقود")
+    sh_service = gc.open("بيانات الخدمة")
 
-# فتح ملفات Google Sheet لكل قسم
-sh_employees = gc.open("بيانات الموظفين")
-sh_contracts = gc.open("بيانات العقود")
-sh_service = gc.open("بيانات الخدمة")
-
+except Exception as e:
+    st.error(f"حدث خطأ في إعداد الاتصال: {e}")
 # إعداد Google Drive
 gauth = GoogleAuth()
 gauth.credentials = credentials
