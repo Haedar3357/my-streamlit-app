@@ -8,6 +8,85 @@ import base64
 import datetime
 import os
 import json
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+import arabic_reshaper
+from bidi.algorithm import get_display
+
+
+def generate_pdf(data, images):
+    # إنشاء ملف PDF جديد
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    c = canvas.Canvas(temp_file.name, pagesize=letter)
+
+    # إضافة الخط العربي
+    font_path = "DejaVuSans.ttf"  # تأكد من أن الخط يدعم العربية
+    pdfmetrics.registerFont(TTFont('DejaVu', font_path))
+    c.setFont("DejaVu", 12)
+
+    # إعداد العنوان الرئيسي للنموذج (من اليمين لليسار باستخدام arabic_reshaper و python-bidi)
+    title = "نموذج بيانات الموظف"
+    reshaped_title = arabic_reshaper.reshape(title)
+    bidi_title = get_display(reshaped_title)
+    c.drawRightString(500, 750, bidi_title)  # رسم العنوان الرئيسي من اليمين لليسار
+
+    # إضافة بيانات الموظف إلى ملف PDF (بصيغة "العنوان: القيمة" من اليمين لليسار)
+    y_position = 730
+    for label, value in data.items():
+        # إعادة تشكيل العنوان والقيمة
+        reshaped_label = arabic_reshaper.reshape(label)
+        reshaped_value = arabic_reshaper.reshape(value)
+        bidi_label = get_display(reshaped_label)
+        bidi_value = get_display(reshaped_value)
+        
+        # تنسيق السطر بصيغة "العنوان: القيمة"
+        line_text = f"{bidi_label}: {bidi_value}"
+        
+        # كتابة السطر بالكامل من اليمين لليسار باستخدام drawRightString
+        c.drawRightString(500, y_position, line_text)
+        y_position -= 20  # تقليل الموضع العمودي للكتابة أسفل السطر السابق
+
+    # إضافة عنوان المرفقات بشكل صحيح
+    reshaped_label = arabic_reshaper.reshape("المرفقات:")
+    bidi_label = get_display(reshaped_label)
+    c.drawRightString(500, y_position, bidi_label)
+    y_position -= 30
+
+    # إضافة الصور مع وضعها بشكل محاذي للعنوان الخاص بها وزيادة الحجم مع استخدام صفحات جديدة
+    for label, img in images.items():
+        if img:
+            # حفظ الصورة مؤقتًا
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_img:
+                img_path = temp_img.name
+                with open(img_path, 'wb') as f:
+                    f.write(img.getvalue())  # الكتابة إلى الملف المؤقت
+
+                # تحضير النص الخاص بالعنوان واستخدام الاتجاه من اليمين لليسار
+                reshaped_label = arabic_reshaper.reshape(label)
+                bidi_label = get_display(reshaped_label)
+                
+                # رسم العنوان في موضع محدد
+                c.drawRightString(500, y_position, bidi_label)
+                y_position -= 20  # خفض الموضع قليلاً بعد العنوان
+                
+                # رسم الصورة بحجم أكبر في الصفحة الحالية
+                c.drawImage(img_path, 200, y_position-300, width=300, height=300)  # تكبير الصورة
+                y_position -= 320  # خفض الموضع بشكل أكبر بعد إضافة الصورة
+
+                # إضافة صفحة جديدة إذا كانت هناك صورة أخرى
+                c.showPage()
+
+                # إعادة تعيين إعدادات الخط والنص في الصفحة الجديدة
+                pdfmetrics.registerFont(TTFont('DejaVu', font_path))
+                c.setFont("DejaVu", 12)
+                y_position = 750  # إعادة تعيين الموضع في الصفحة الجديدة
+                
+    # حفظ الملف
+    c.save()
+    return temp_file.name
+
 
 # تحديد تاريخ أدنى وحد أقصى
 min_date = datetime.date(1900, 1, 1)
@@ -158,11 +237,12 @@ passwords = ["77665", "66554", "55664", "33556", "22110"]
 st.sidebar.title("التنقل بين الصفحات")
 page = st.sidebar.selectbox("اختر الصفحة", ["الصفحة الرئيسية", "إضافة بيانات الموظفين", "إضافة بيانات العقود", "إضافة بيانات العاملين بصفة شراء خدمات"])
 
+
 if page == "الصفحة الرئيسية":
-    add_background("background.jpg")
+    add_background("C:/Users/CISCOSTORE/Desktop/website/background.jpg")
 
     # الشعار والعنوان
-    logo_path = "logo.jpg"
+    logo_path = "C:/Users/CISCOSTORE/Desktop/website/logo.jpg"
     with open(logo_path, "rb") as img_file:
         logo_encoded = base64.b64encode(img_file.read()).decode()
     st.markdown(
@@ -216,6 +296,49 @@ elif page == "إضافة بيانات الموظفين":
             worksheet = sh_employees.sheet1
             worksheet.append_row([computer_no, badge_no, department, full_name, mother_name, str(birth_date), marital_status, file_links[0] if marital_status == "نعم" else None, family_count, first_child, second_child, third_child, fourth_child, address, nearby_landmark, str(appointment_date), file_links[1], permit_number, file_links[2], file_links[3], file_links[4], file_links[5], file_links[6], mobile, data_entry_name])
             st.success("تم حفظ البيانات بنجاح!")
+        if st.button("تحميل كملف PDF"):
+            # البيانات المراد إضافتها في ملف PDF
+            data = {
+                "رقم الحاسبة": computer_no,
+                "رقم الشعار": badge_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "الحالة الزوجية": marital_status,
+                "عدد الأفراد": family_count,
+                "اول طفل": first_child,
+                "ثاني طفل": second_child,
+                "ثالث طفل": third_child,
+                "رابع طفل": fourth_child,
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "تاريخ التعيين": str(appointment_date),
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # إعداد الملفات
+            images = {
+                "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
+                "الامر الاداري للتعيين": administrative_order,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقة السكن/الوجه": housing_card_front,
+                "بطاقة السكن/الضهر": housing_card_back
+            }
+
+            # إنشاء ملف PDF
+            pdf_file_path = generate_pdf(data, images)
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل",
+                    data=pdf_file,
+                    file_name="بيانات_الموظف.pdf",
+                    mime="application/pdf"
+                )
     else:
         if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
             st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
@@ -261,7 +384,7 @@ elif page == "إضافة بيانات العقود":
         mobile = st.text_input("رقم الموبايل")
         data_entry_name = st.text_input("اسم مدخل البيانات")
         
-        # زر لحفظ البيانات
+        # زر لحفظ البيانات 
         if st.button("حفظ البيانات"):
             # رفع الملفات
             file_links = upload_files([
@@ -283,6 +406,51 @@ elif page == "إضافة بيانات العقود":
                                 file_links[3], file_links[4], file_links[5], file_links[6],
                                 mobile, data_entry_name])
             st.success("تم حفظ البيانات بنجاح!")
+        # زر لحفظ البيانات وتحميلها كملف PDF
+        if st.button("تحميل كملف PDF"):
+            # البيانات المراد إضافتها في ملف PDF
+            data = {
+                "رقم الحاسبة": computer_no,
+                "رقم الشعار": badge_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "الحالة الزوجية": marital_status,
+                "عدد الأفراد": family_count,
+                "اول طفل": first_child,
+                "ثاني طفل": second_child,
+                "ثالث طفل": third_child,
+                "رابع طفل": fourth_child,
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # إعداد الملفات (المرفقات) للـ PDF
+            images = {
+                "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
+                "الامر الاداري للتعاقد": administrative_order,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقة السكن/الوجه": housing_card_front,
+                "بطاقة السكن/الضهر": housing_card_back
+            }
+
+            # إنشاء ملف PDF باستخدام التابع generate_pdf
+            pdf_file_path = generate_pdf(data, images)
+
+            # إتاحة زر التحميل للمستخدم
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل",
+                    data=pdf_file,
+                    file_name="بيانات_العقد.pdf",
+                    mime="application/pdf"
+                )
     else:
         if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
             st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
@@ -329,8 +497,49 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
             ])
             
             st.success("تم حفظ البيانات بنجاح!")
+         # زر لتحميل البيانات كملف PDF
+        if st.button("تحميل كملف PDF"):
+            # جمع البيانات المدخلة في معجم (dictionary)
+            data = {
+                "رقم الحاسبة": computer_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "تاريخ الإحالة": str(referral_date),
+                "مدة الإحالة": referral_duration,
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # الملفات المرفقة
+            images = {
+                "نسخة من الإحالة": referral_copy,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقه السكن/ الوجه": housing_card_front,
+                "بطاقه السكن/الضهر": housing_card_back
+            }
+
+            # إنشاء ملف PDF باستخدام التابع generate_pdf
+            pdf_file_path = generate_pdf(data, images)
+
+            # عرض زر لتحميل ملف PDF
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل كملف PDF",
+                    data=pdf_file,
+                    file_name="بيانات_العامل_شراء_خدمات.pdf",
+                    mime="application/pdf"
+                )
+        
     else:
         if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
             st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
 
 st.markdown("<div class='footer'>تم أعداد وتصميم الاستمارة<br>Ali.H.gma</div>", unsafe_allow_html=True)
+
