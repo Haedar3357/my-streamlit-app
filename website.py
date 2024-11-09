@@ -239,10 +239,10 @@ page = st.sidebar.selectbox("اختر الصفحة", ["الصفحة الرئيس
 
 
 if page == "الصفحة الرئيسية":
-    add_background("C:/Users/CISCOSTORE/Desktop/website/background.jpg")
+    add_background("background.jpg")
 
     # الشعار والعنوان
-    logo_path = "C:/Users/CISCOSTORE/Desktop/website/logo.jpg"
+    logo_path = "logo.jpg"
     with open(logo_path, "rb") as img_file:
         logo_encoded = base64.b64encode(img_file.read()).decode()
     st.markdown(
