@@ -36,8 +36,8 @@ def generate_pdf(data, images):
     y_position = 730
     for label, value in data.items():
         # إعادة تشكيل العنوان والقيمة
-        reshaped_label = arabic_reshaper.reshape(label)
-        reshaped_value = arabic_reshaper.reshape(value)
+        reshaped_label = arabic_reshaper.reshape(str(label))  
+        reshaped_value = arabic_reshaper.reshape(str(value))
         bidi_label = get_display(reshaped_label)
         bidi_value = get_display(reshaped_value)
         
