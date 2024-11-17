@@ -491,7 +491,7 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
             worksheet = sh_service.sheet1
             worksheet.append_row([
                 computer_no, department, full_name, mother_name, str(birth_date), 
-                address, nearby_landmark, str(referral_date), referral_duration, 
+                address, nearby_landmark, str(referral_date), str(referral_duration), 
                 file_links[0], permit_number, file_links[1], file_links[2], 
                 file_links[3], file_links[4], file_links[5], mobile, data_entry_name
             ])
