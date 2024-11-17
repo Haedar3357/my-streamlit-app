@@ -22,7 +22,7 @@ def generate_pdf(data, images):
     c = canvas.Canvas(temp_file.name, pagesize=letter)
 
     # إضافة الخط العربي
-    font_path = "C:/Users/CISCOSTORE/Desktop/website/DejaVuSans.ttf"  # تأكد من أن الخط يدعم العربية
+    font_path = "DejaVuSans.ttf"  # تأكد من أن الخط يدعم العربية
     pdfmetrics.registerFont(TTFont('DejaVu', font_path))
     c.setFont("DejaVu", 12)
 
