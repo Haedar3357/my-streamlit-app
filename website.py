@@ -22,7 +22,7 @@ def generate_pdf(data, images):
     c = canvas.Canvas(temp_file.name, pagesize=letter)
 
     # إضافة الخط العربي
-    font_path = "DejaVuSans.ttf"  # تأكد من أن الخط يدعم العربية
+    font_path = "C:/Users/CISCOSTORE/Desktop/website/DejaVuSans.ttf"  # تأكد من أن الخط يدعم العربية
     pdfmetrics.registerFont(TTFont('DejaVu', font_path))
     c.setFont("DejaVu", 12)
 
@@ -32,17 +32,17 @@ def generate_pdf(data, images):
     bidi_title = get_display(reshaped_title)
     c.drawRightString(500, 750, bidi_title)  # رسم العنوان الرئيسي من اليمين لليسار
 
-    # إضافة بيانات الموظف إلى ملف PDF (بصيغة "العنوان: القيمة" من اليمين لليسار)
+    # إضافة بيانات الموظف إلى ملف PDF
     y_position = 730
     for label, value in data.items():
         # إعادة تشكيل العنوان والقيمة
         reshaped_label = arabic_reshaper.reshape(label)
-        reshaped_value = arabic_reshaper.reshape(str(value))
+        reshaped_value = arabic_reshaper.reshape(value)
         bidi_label = get_display(reshaped_label)
         bidi_value = get_display(reshaped_value)
         
-        # تنسيق السطر بصيغة "العنوان: القيمة"
-        line_text = f"{bidi_label}: {bidi_value}"
+        # تنسيق السطر ليكون "القيمة: العنوان"
+        line_text = f"{bidi_value} : {bidi_label}"
         
         # كتابة السطر بالكامل من اليمين لليسار باستخدام drawRightString
         c.drawRightString(500, y_position, line_text)
