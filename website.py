@@ -27,13 +27,14 @@ def generate_pdf(data, images):
     c.setFont("DejaVu", 12)
 
     # إعداد العنوان الرئيسي للنموذج (من اليمين لليسار باستخدام arabic_reshaper و python-bidi)
-    title = "نموذج بيانات الموظف"
-    reshaped_title = arabic_reshaper.reshape(title)
+  
+    reshaped_title = arabic_reshaper.reshape(data["title"])
     bidi_title = get_display(reshaped_title)
     c.drawRightString(500, 750, bidi_title)  # رسم العنوان الرئيسي من اليمين لليسار
 
     # إضافة بيانات الموظف إلى ملف PDF
     y_position = 730
+    del data["title"]
     for label, value in data.items():
         # إعادة تشكيل العنوان والقيمة
         reshaped_label = arabic_reshaper.reshape(str(label))  
@@ -329,7 +330,7 @@ elif page == "إضافة بيانات الموظفين":
                 "بطاقة السكن/الوجه": housing_card_front,
                 "بطاقة السكن/الضهر": housing_card_back
             }
-
+            data["title"] = "نموذج بيانات الموظف"
             # إنشاء ملف PDF
             pdf_file_path = generate_pdf(data, images)
             with open(pdf_file_path, "rb") as pdf_file:
@@ -439,7 +440,7 @@ elif page == "إضافة بيانات العقود":
                 "بطاقة السكن/الوجه": housing_card_front,
                 "بطاقة السكن/الضهر": housing_card_back
             }
-
+            data["title"] = "نموذج بيانات العقد"
             # إنشاء ملف PDF باستخدام التابع generate_pdf
             pdf_file_path = generate_pdf(data, images)
 
@@ -524,7 +525,7 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
                 "بطاقه السكن/ الوجه": housing_card_front,
                 "بطاقه السكن/الضهر": housing_card_back
             }
-
+            data["title"] = "نموذج بيانات العامل بصفة شراء خدمات"
             # إنشاء ملف PDF باستخدام التابع generate_pdf
             pdf_file_path = generate_pdf(data, images)
 
