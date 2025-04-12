@@ -145,7 +145,6 @@ def upload_files(files):
         else:
             links.append(None)
     return links
-    
 def load_css():
     css_code = """
     /* تكبير حجم الخط وتغيير اتجاه النصوص للموقع بالكامل إلى اليمين */
@@ -156,32 +155,27 @@ def load_css():
     }
     /* تكبير حجم العناوين */
     .main-title, h1, h2, h3, h4, h5, h6 {
-        font-size: 24px;
+        font-size: 24px; /* حجم أكبر للعناوين */
         font-weight: bold;
         color: #333;
     }
     /* تكبير حجم النصوص فوق حقول الإدخال */
     label {
-        font-size: 20px;
+        font-size: 20px; /* تكبير حجم النص */
         font-weight: bold;
         color: #333;
     }
     /* محاذاة الشعار بجانب العنوان */
     .header-container {
-    display: flex;
-    align-items: center; /* توسيط عمودي */
-    justify-content: flex-start; /* محاذاة لليسار */
-    gap: 20px; /* مسافة بين العناصر */
-    padding: 15px;
-    background: #ffffff; /* خلفية بيضاء */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* ظل ناعم */
-    border-radius: 8px;
-    margin-bottom: 30px;
+        display: flex;
+        align-items: left;
+        justify-content: flex-end;
+        margin-top: 20px;
     }
     .logo {
         width: 115px;
         height: auto;
-        margin-left: 15px;
+        margin-left: 15px; /* فراغ بين الشعار والعنوان */
     }
     .footer {
         position: fixed;
@@ -191,93 +185,62 @@ def load_css():
         font-size: 14px;
         color: #333;
     }
-    
-    
-    body {
-        background: #f8f9fa !important;
-    }
-    
-    .stTextInput>div>div>input,
-    .stNumberInput>div>div>input,
-    .stDateInput>div>div>input {
-        font-size: 18px !important;
-        padding: 12px !important;
-    }
-    
-    .stButton>button {
-        width: 100% !important;
-        padding: 15px !important;
-        font-size: 20px !important;
-        background: #007bff !important;
-        transition: 0.3s !important;
-    }
-    
-    .stButton>button:hover {
-        opacity: 0.9 !important;
-        transform: translateY(-2px) !important;
-    }
-    
-    .stFileUploader {
-        border: 2px dashed #ced4da !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        background: #ffffff !important;
-    }
-    
-    .stFileUploader:hover {
-        border-color: #007bff !important;
-    }
-    
-    .stDateInput>div>div>input {
-        text-align: right !important;
-        direction: rtl !important;
-    }
     """
     st.markdown(f"<style>{css_code}</style>", unsafe_allow_html=True)
 
+# دالة لتحميل خلفية الصورة للصفحة الرئيسية كخلفية شاملة شفافة
+def add_background(image_file):
+    with open(image_file, "rb") as img:
+        encoded = base64.b64encode(img.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+          .background {{
+             position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("data:image/png;base64,{encoded}");
+            background-size: 80% 100%; /* يضمن تغطية الشاشة بالكامل */
+            background-position: left center;
+            background-repeat: no-repeat;
+            opacity: 0.3; /* ضبط الشفافية حسب الحاجة */
+        }}
+            
+           
 
+        .main-title {{
+            font-size: 35px;
+            font-weight: bold;
+            text-align: right;
+            color: #333;
+            margin-top: 20px;
+            z-index: 1;
+            position: relative;
+        }}
+        </style>
+        
+        <div class="background"></div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 # تحميل CSS
 load_css()
 
 
-# ---------------------- الإعدادات العامة ----------------------
+# قائمة كلمات السر المقبولة
 passwords = ["0102", "1002", "0120", "1314", "2324"]
-min_date = datetime.date(1900, 1, 1)
-max_date = datetime.date.today()
-
-# ---------------------- الدوال المساعدة ----------------------
-def validate_required(fields):
-    """التحقق من جميع الحقول الإلزامية"""
-    missing = []
-    for name, value in fields.items():
-        if (isinstance(value, (str, int)) and (not value or (isinstance(value, str) and value.strip() == ""))):
-            missing.append(name)
-        elif isinstance(value, st.runtime.uploaded_file_manager.UploadedFile) and not value:
-            missing.append(name)
-        elif value is None:
-            missing.append(name)
-    return missing
 
 
-
-def upload_files(files):
-    return [f"file_{i}_link" for i in range(len(files))]
-
-def generate_pdf(data, files):
-    return "output.pdf"
-
-# ---------------------- الواجهة الرئيسية ----------------------
+# الصفحة الرئيسية
 st.sidebar.title("التنقل بين الصفحات")
-page = st.sidebar.selectbox("اختر الصفحة", [
-    "الصفحة الرئيسية",
-    "إضافة بيانات الموظفين",
-    "إضافة بيانات العقود", 
-    "إضافة بيانات العاملين بصفة شراء خدمات"
-])
+page = st.sidebar.selectbox("اختر الصفحة", ["الصفحة الرئيسية", "إضافة بيانات الموظفين", "إضافة بيانات العقود", "إضافة بيانات العاملين بصفة شراء خدمات"])
 
-# ---------------------- الصفحة الرئيسية ----------------------
+
 if page == "الصفحة الرئيسية":
+    add_background("background.jpg")
 
     # الشعار والعنوان
     logo_path = "logo.jpg"
@@ -295,276 +258,288 @@ if page == "الصفحة الرئيسية":
         unsafe_allow_html=True,
     )
 
-# ---------------------- صفحة الموظفين ----------------------
+# صفحة إضافة موظف
 elif page == "إضافة بيانات الموظفين":
     st.title("إضافة بيانات الموظف")
-    password = st.text_input("كلمة المرور *", type="password")
-    
-    if password in passwords:
-        with st.form("employee_form", clear_on_submit=True):
-            st.markdown("**جميع الحقول مطلوبة**")
-            
-            # ------ المعلومات الأساسية ------
-            computer_no = st.text_input("رقم الحاسبة *")
-            badge_no = st.text_input("رقم الشعار *")
-            department = st.text_input("القسم *")
-            full_name = st.text_input("الإسم الرباعي واللقب *")
-            mother_name = st.text_input("اسم الأم الثلاثي *")
-            birth_date = st.date_input("المواليد *", min_value=min_date)
-            marital_status = st.selectbox("متزوج *", ["نعم", "لا"])
-            
-            if marital_status == "نعم":
-                marriage_contract = st.file_uploader("ارفاق عقد الزواج *", type=["pdf", "jpg"])
-            else:
-                marriage_contract = None
-                
-            family_count = st.number_input("عدد الأفراد *", min_value=0)
-            first_child = st.text_input("اول طفل *")
-            second_child = st.text_input("ثاني طفل *")
-            third_child = st.text_input("ثالث طفل *")
-            fourth_child = st.text_input("رابع طفل *")
-            address = st.text_input("عنوان السكن *")
-            nearby_landmark = st.text_input("أقرب نقطه دالة *")
-            appointment_date = st.date_input("تاريخ التعيين *", min_value=min_date)
-            administrative_order = st.file_uploader("الامر الاداري للتعيين *", type=["pdf", "jpg"])
-            permit_number = st.text_input("رقم التصريح *")
-            permit_copy = st.file_uploader("ارفاق نسخة من التصريح *", type=["pdf", "jpg"])
-            national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه *", type=["jpg", "png"])
-            national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر *", type=["jpg", "png"])
-            housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه *", type=["jpg", "png"])
-            housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر *", type=["jpg", "png"])
-            mobile = st.text_input("رقم الموبايل *")
-            data_entry_name = st.text_input("اسم مدخل البيانات *")
 
-            if st.form_submit_button("حفظ البيانات"):
-                required_fields = {
-                    "رقم الحاسبة": computer_no,
-                    "رقم الشعار": badge_no,
-                    "القسم": department,
-                    "الإسم الرباعي": full_name,
-                    "اسم الأم": mother_name,
-                    "عنوان السكن": address,
-                    "أقرب نقطه دالة": nearby_landmark,
-                    "رقم التصريح": permit_number,
-                    "رقم الموبايل": mobile,
-                    "اسم مدخل البيانات": data_entry_name,
-                    "الامر الاداري": administrative_order,
-                    "نسخة التصريح": permit_copy,
-                    "البطاقة الوطنية/الواجهه": national_id_front,
-                    "البطاقة الوطنية/الضهر": national_id_back,
-                    "بطاقة السكن/الوجه": housing_card_front,
-                    "بطاقة السكن/الضهر": housing_card_back,
-                    "اول طفل": first_child,
-                    "ثاني طفل": second_child,
-                    "ثالث طفل": third_child,
-                    "رابع طفل": fourth_child
-                }
-                if marital_status == "نعم":
-                    required_fields["عقد الزواج"] = marriage_contract
-                
-                missing = validate_required(required_fields)
-                if missing:
-                    st.error(f"الحقول الناقصة: {', '.join(missing)}")
-                else:
-                    try:
-                        file_links = upload_files([
-                            marriage_contract, administrative_order, permit_copy,
-                            national_id_front, national_id_back, housing_card_front,
-                            housing_card_back
-                        ])
-                        st.success("تم الحفظ بنجاح!")
-                    except Exception as e:
-                        st.error(f"خطأ: {str(e)}")
-                        
-            if st.button("تحميل كملف PDF"):
-                # البيانات المراد إضافتها في ملف PDF
-                data = {
-                    "رقم الحاسبة": computer_no,
-                    "رقم الشعار": badge_no,
-                    "القسم": department,
-                    "الإسم الرباعي واللقب": full_name,
-                    "اسم الأم الثلاثي": mother_name,
-                    "المواليد": str(birth_date),
-                    "الحالة الزوجية": marital_status,
-                    "عدد الأفراد": family_count,
-                    "اول طفل": first_child,
-                    "ثاني طفل": second_child,
-                    "ثالث طفل": third_child,
-                    "رابع طفل": fourth_child,
-                    "عنوان السكن": address,
-                    "أقرب نقطه دالة": nearby_landmark,
-                    "تاريخ التعيين": str(appointment_date),
-                    "رقم التصريح": permit_number,
-                    "رقم الموبايل": mobile,
-                    "اسم مدخل البيانات": data_entry_name
-                }
-    
-                # إعداد الملفات
-                images = {
-                    "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
-                    "الامر الاداري للتعيين": administrative_order,
-                    "نسخة من التصريح": permit_copy,
-                    "البطاقة الوطنية/الواجهه": national_id_front,
-                    "البطاقة الوطنية/الضهر": national_id_back,
-                    "بطاقة السكن/الوجه": housing_card_front,
-                    "بطاقة السكن/الضهر": housing_card_back
-                }
-                data["title"] = "نموذج بيانات الموظف"
-                # إنشاء ملف PDF
-                pdf_file_path = generate_pdf(data, images)
-                with open(pdf_file_path, "rb") as pdf_file:
-                    st.download_button(
-                        label="اضغط هنا للتحميل",
-                        data=pdf_file,
-                        file_name="بيانات_الموظف.pdf",
-                        mime="application/pdf"
-                    )
-    elif password:
-        st.error("كلمة المرور غير صحيحة!")
+    # إدخال كلمة السر
+    user_password = st.text_input("أدخل كلمة السر", type="password")
 
-# ---------------------- صفحة العقود ----------------------
+    if user_password in passwords:  # التحقق من وجود كلمة السر في القائمة
+        computer_no = st.text_input("رقم الحاسبة")
+        badge_no = st.text_input("رقم الشعار")
+        department = st.text_input("القسم")
+        full_name = st.text_input("الإسم الرباعي واللقب")
+        mother_name = st.text_input("اسم الأم الثلاثي")
+        birth_date = st.date_input("المواليد", min_value=min_date, max_value=max_date)
+        marital_status = st.selectbox("متزوج", ["نعم", "لا"])
+        marriage_contract = st.file_uploader("ارفاق عقد الزواج", type=["jpg", "jpeg", "png", "pdf"]) if marital_status == "نعم" else None
+        family_count = st.number_input("عدد الأفراد", min_value=0, step=1)
+        first_child = st.text_input("اول طفل")
+        second_child = st.text_input("ثاني طفل")
+        third_child = st.text_input("ثالث طفل")
+        fourth_child = st.text_input("رابع طفل")
+        address = st.text_input("عنوان السكن")
+        nearby_landmark = st.text_input("أقرب نقطه دالة")
+        appointment_date = st.date_input("تاريخ التعيين", min_value=min_date, max_value=max_date)
+        administrative_order = st.file_uploader("الامر الاداري للتعيين", type=["jpg", "jpeg", "png", "pdf"])
+        permit_number = st.text_input("رقم التصريح")
+        permit_copy = st.file_uploader("ارفاق نسخة من التصريح", type=["jpg", "jpeg", "png", "pdf"])
+        national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه", type=["jpg", "jpeg", "png", "pdf"])
+        national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        mobile = st.text_input("رقم الموبايل")
+        data_entry_name = st.text_input("اسم مدخل البيانات")
+
+        if st.button("حفظ البيانات"):
+            file_links = upload_files([marriage_contract if marital_status == "نعم" else None, administrative_order, permit_copy, national_id_front, national_id_back, housing_card_front, housing_card_back])
+            worksheet = sh_employees.sheet1
+            worksheet.append_row([computer_no, badge_no, department, full_name, mother_name, str(birth_date), marital_status, file_links[0] if marital_status == "نعم" else None, family_count, first_child, second_child, third_child, fourth_child, address, nearby_landmark, str(appointment_date), file_links[1], permit_number, file_links[2], file_links[3], file_links[4], file_links[5], file_links[6], mobile, data_entry_name])
+            st.success("تم حفظ البيانات بنجاح!")
+        if st.button("تحميل كملف PDF"):
+            # البيانات المراد إضافتها في ملف PDF
+            data = {
+                "رقم الحاسبة": computer_no,
+                "رقم الشعار": badge_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "الحالة الزوجية": marital_status,
+                "عدد الأفراد": family_count,
+                "اول طفل": first_child,
+                "ثاني طفل": second_child,
+                "ثالث طفل": third_child,
+                "رابع طفل": fourth_child,
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "تاريخ التعيين": str(appointment_date),
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # إعداد الملفات
+            images = {
+                "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
+                "الامر الاداري للتعيين": administrative_order,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقة السكن/الوجه": housing_card_front,
+                "بطاقة السكن/الضهر": housing_card_back
+            }
+            data["title"] = "نموذج بيانات الموظف"
+            # إنشاء ملف PDF
+            pdf_file_path = generate_pdf(data, images)
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل",
+                    data=pdf_file,
+                    file_name="بيانات_الموظف.pdf",
+                    mime="application/pdf"
+                )
+    else:
+        if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
+            st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
+
+# --- الصفحة الثانية: إضافة عقد ---
 elif page == "إضافة بيانات العقود":
     st.title("إضافة بيانات العقد")
-    password = st.text_input("كلمة المرور *", type="password")
-    
-    if password in passwords:
-        with st.form("contract_form", clear_on_submit=True):
-            st.markdown("**جميع الحقول مطلوبة**")
-            
-            computer_no = st.text_input("رقم الحاسبة *")
-            badge_no = st.text_input("رقم الشعار *")
-            department = st.text_input("القسم *")
-            full_name = st.text_input("الإسم الرباعي واللقب *")
-            mother_name = st.text_input("اسم الأم الثلاثي *")
-            birth_date = st.date_input("المواليد *", min_value=min_date)
-            marital_status = st.selectbox("متزوج *", ["نعم", "لا"])
-            
-            if marital_status == "نعم":
-                marriage_contract = st.file_uploader("ارفاق عقد الزواج *", type=["pdf", "jpg"])
-            else:
-                marriage_contract = None
-                
-            family_count = st.number_input("عدد الأفراد *", min_value=0)
-            first_child = st.text_input("اول طفل *")
-            second_child = st.text_input("ثاني طفل *")
-            third_child = st.text_input("ثالث طفل *")
-            fourth_child = st.text_input("رابع طفل *")
-            address = st.text_input("عنوان السكن *")
-            nearby_landmark = st.text_input("أقرب نقطه دالة *")
-            contract_date = st.date_input("تاريخ التعاقد *", min_value=min_date)
-            administrative_order = st.file_uploader("الامر الاداري للتعاقد *", type=["pdf", "jpg"])
-            permit_number = st.text_input("رقم التصريح *")
-            permit_copy = st.file_uploader("ارفاق نسخة من التصريح *", type=["pdf", "jpg"])
-            national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه *", type=["jpg", "png"])
-            national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر *", type=["jpg", "png"])
-            housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه *", type=["jpg", "png"])
-            housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر *", type=["jpg", "png"])
-            mobile = st.text_input("رقم الموبايل *")
-            data_entry_name = st.text_input("اسم مدخل البيانات *")
+    user_password = st.text_input("أدخل كلمة السر", type="password")
 
-            if st.form_submit_button("حفظ البيانات"):
-                required_fields = {
-                    "رقم الحاسبة": computer_no,
-                    "رقم الشعار": badge_no,
-                    "القسم": department,
-                    "الإسم الرباعي": full_name,
-                    "اسم الأم": mother_name,
-                    "عنوان السكن": address,
-                    "أقرب نقطه دالة": nearby_landmark,
-                    "رقم التصريح": permit_number,
-                    "رقم الموبايل": mobile,
-                    "اسم مدخل البيانات": data_entry_name,
-                    "الامر الاداري": administrative_order,
-                    "نسخة التصريح": permit_copy,
-                    "البطاقة الوطنية/الواجهه": national_id_front,
-                    "البطاقة الوطنية/الضهر": national_id_back,
-                    "بطاقة السكن/الوجه": housing_card_front,
-                    "بطاقة السكن/الضهر": housing_card_back,
-                    "اول طفل": first_child,
-                    "ثاني طفل": second_child,
-                    "ثالث طفل": third_child,
-                    "رابع طفل": fourth_child
-                }
-                if marital_status == "نعم":
-                    required_fields["عقد الزواج"] = marriage_contract
-                
-                missing = validate_required(required_fields)
-                if missing:
-                    st.error(f"الحقول الناقصة: {', '.join(missing)}")
-                else:
-                    try:
-                        file_links = upload_files([
-                            marriage_contract, administrative_order, permit_copy,
-                            national_id_front, national_id_back, housing_card_front,
-                            housing_card_back
-                        ])
-                        st.success("تم الحفظ بنجاح!")
-                    except Exception as e:
-                        st.error(f"خطأ: {str(e)}")
-    
-    elif password:
-        st.error("كلمة المرور غير صحيحة!")
+    if user_password in passwords:  # التحقق من وجود كلمة السر في القائمة
+        # إدخال الحقول النصية
+        computer_no = st.text_input("رقم الحاسبة")
+        badge_no = st.text_input("رقم الشعار")
+        department = st.text_input("القسم")
+        full_name = st.text_input("الإسم الرباعي واللقب")
+        mother_name = st.text_input("اسم الأم الثلاثي")
+        birth_date = st.date_input("المواليد", min_value=min_date, max_value=max_date)
+        marital_status = st.selectbox("متزوج", ["نعم", "لا"])
+        marriage_contract = st.file_uploader("ارفاق عقد الزواج", type=["jpg", "jpeg", "png", "pdf"]) if marital_status == "نعم" else None
+        family_count = st.number_input("عدد الأفراد", min_value=0, step=1)
+        
+        # إدخال أسماء الأطفال
+        first_child = st.text_input("اول طفل")
+        second_child = st.text_input("ثاني طفل")
+        third_child = st.text_input("ثالث طفل")
+        fourth_child = st.text_input("رابع طفل")
+        
+        # إدخال البيانات المتبقية
+        address = st.text_input("عنوان السكن")
+        nearby_landmark = st.text_input("أقرب نقطه دالة")
+        contract_date = st.date_input("تاريخ التعاقد", min_value=min_date, max_value=max_date)
+        administrative_order = st.file_uploader("الامر الاداري للتعاقد", type=["jpg", "jpeg", "png", "pdf"])
+        permit_number = st.text_input("رقم التصريح")
+        permit_copy = st.file_uploader("ارفاق نسخة من التصريح", type=["jpg", "jpeg", "png", "pdf"])
+        
+        # إدخال نسخ الوثائق
+        national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه", type=["jpg", "jpeg", "png", "pdf"])
+        national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        
+        # بيانات إضافية
+        mobile = st.text_input("رقم الموبايل")
+        data_entry_name = st.text_input("اسم مدخل البيانات")
+        
+        # زر لحفظ البيانات 
+        if st.button("حفظ البيانات"):
+            # رفع الملفات
+            file_links = upload_files([
+                marriage_contract if marital_status == "نعم" else None,
+                administrative_order,
+                permit_copy,
+                national_id_front,
+                national_id_back,
+                housing_card_front,
+                housing_card_back
+            ])
+            
+            # كتابة البيانات إلى Google Sheets للعقود
+            worksheet = sh_contracts.sheet1
+            worksheet.append_row([computer_no, badge_no, department, full_name, mother_name, str(birth_date),
+                                marital_status, file_links[0] if marital_status == "نعم" else None, family_count,
+                                first_child, second_child, third_child, fourth_child, address, nearby_landmark,
+                                str(contract_date), file_links[1], permit_number, file_links[2],
+                                file_links[3], file_links[4], file_links[5], file_links[6],
+                                mobile, data_entry_name])
+            st.success("تم حفظ البيانات بنجاح!")
+        # زر لحفظ البيانات وتحميلها كملف PDF
+        if st.button("تحميل كملف PDF"):
+            # البيانات المراد إضافتها في ملف PDF
+            data = {
+                "رقم الحاسبة": computer_no,
+                "رقم الشعار": badge_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "الحالة الزوجية": marital_status,
+                "عدد الأفراد": family_count,
+                "اول طفل": first_child,
+                "ثاني طفل": second_child,
+                "ثالث طفل": third_child,
+                "رابع طفل": fourth_child,
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
 
-# ---------------------- صفحة شراء الخدمات ----------------------
+            # إعداد الملفات (المرفقات) للـ PDF
+            images = {
+                "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
+                "الامر الاداري للتعاقد": administrative_order,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقة السكن/الوجه": housing_card_front,
+                "بطاقة السكن/الضهر": housing_card_back
+            }
+            data["title"] = "نموذج بيانات العقد"
+            # إنشاء ملف PDF باستخدام التابع generate_pdf
+            pdf_file_path = generate_pdf(data, images)
+
+            # إتاحة زر التحميل للمستخدم
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل",
+                    data=pdf_file,
+                    file_name="بيانات_العقد.pdf",
+                    mime="application/pdf"
+                )
+    else:
+        if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
+            st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
 elif page == "إضافة بيانات العاملين بصفة شراء خدمات":
     st.title("إضافة بيانات العاملين بصفة شراء خدمات")
-    password = st.text_input("كلمة المرور *", type="password")
-    
-    if password in passwords:
-        with st.form("service_form", clear_on_submit=True):
-            st.markdown("**جميع الحقول مطلوبة**")
-            
-            computer_no = st.text_input("رقم الحاسبة *")
-            department = st.text_input("القسم *")
-            full_name = st.text_input("الإسم الرباعي واللقب *")
-            mother_name = st.text_input("اسم الأم الثلاثي *")
-            birth_date = st.date_input("المواليد *", min_value=min_date)
-            address = st.text_input("عنوان السكن *")
-            nearby_landmark = st.text_input("أقرب نقطه دالة *")
-            referral_date = st.date_input("تاريخ الإحالة *", min_value=min_date)
-            referral_duration = st.number_input("مدة الإحالة *", min_value=1)
-            referral_copy = st.file_uploader("ارفاق نسخة من الإحالة *", type=["pdf", "jpg"])
-            permit_number = st.text_input("رقم التصريح *")
-            permit_copy = st.file_uploader("ارفاق نسخة من التصريح *", type=["pdf", "jpg"])
-            national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه *", type=["jpg", "png"])
-            national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر *", type=["jpg", "png"])
-            housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه *", type=["jpg", "png"])
-            housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر *", type=["jpg", "png"])
-            mobile = st.text_input("رقم الموبايل *")
-            data_entry_name = st.text_input("اسم مدخل البيانات *")
+    user_password = st.text_input("أدخل كلمة السر", type="password")
 
-            if st.form_submit_button("حفظ البيانات"):
-                required_fields = {
-                    "رقم الحاسبة": computer_no,
-                    "القسم": department,
-                    "الإسم الرباعي": full_name,
-                    "اسم الأم": mother_name,
-                    "عنوان السكن": address,
-                    "أقرب نقطه دالة": nearby_landmark,
-                    "رقم التصريح": permit_number,
-                    "رقم الموبايل": mobile,
-                    "اسم مدخل البيانات": data_entry_name,
-                    "نسخة الإحالة": referral_copy,
-                    "نسخة التصريح": permit_copy,
-                    "البطاقة الوطنية/الواجهه": national_id_front,
-                    "البطاقة الوطنية/الضهر": national_id_back,
-                    "بطاقة السكن/الوجه": housing_card_front,
-                    "بطاقة السكن/الضهر": housing_card_back
-                }
-                
-                missing = validate_required(required_fields)
-                if missing:
-                    st.error(f"الحقول الناقصة: {', '.join(missing)}")
-                else:
-                    try:
-                        file_links = upload_files([
-                            referral_copy, permit_copy, 
-                            national_id_front, national_id_back,
-                            housing_card_front, housing_card_back
-                        ])
-                        st.success("تم الحفظ بنجاح!")
-                    except Exception as e:
-                        st.error(f"خطأ: {str(e)}")
-    
-    elif password:
-        st.error("كلمة المرور غير صحيحة!")
+    if user_password in passwords:  # التحقق من وجود كلمة السر في القائمة
+        # الحقول المطلوبة
+        computer_no = st.text_input("رقم الحاسبة")
+        department = st.text_input("القسم")
+        full_name = st.text_input("الإسم الرباعي واللقب")
+        mother_name = st.text_input("اسم الأم الثلاثي")
+        birth_date = st.date_input("المواليد", min_value=datetime.date(1900, 1, 1), max_value=datetime.date.today())
+        address = st.text_input("عنوان السكن")
+        nearby_landmark = st.text_input("أقرب نقطه دالة")
+        referral_date = st.date_input("تاريخ الإحالة")
+        referral_duration = st.number_input("مدة الإحالة", min_value=1, step=1)
+        referral_copy = st.file_uploader("ارفاق نسخة من الإحالة", type=["jpg", "jpeg", "png", "pdf"])
+        permit_number = st.text_input("رقم التصريح")
+        permit_copy = st.file_uploader("ارفاق نسخة من التصريح", type=["jpg", "jpeg", "png", "pdf"])
+        national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه", type=["jpg", "jpeg", "png", "pdf"])
+        national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه", type=["jpg", "jpeg", "png", "pdf"])
+        housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+        mobile = st.text_input("رقم الموبايل")
+        data_entry_name = st.text_input("اسم مدخل البيانات")
+        
+        # زر الحفظ
+        if st.button("حفظ البيانات"):
+            # رفع الملفات إلى Google Drive والحصول على الروابط
+            file_links = upload_files([
+                referral_copy, permit_copy, national_id_front, national_id_back, 
+                housing_card_front, housing_card_back
+            ])
+            
+            # إضافة البيانات إلى Google Sheets
+            worksheet = sh_service.sheet1
+            worksheet.append_row([
+                computer_no, department, full_name, mother_name, str(birth_date), 
+                address, nearby_landmark, str(referral_date), str(referral_duration), 
+                file_links[0], permit_number, file_links[1], file_links[2], 
+                file_links[3], file_links[4], file_links[5], mobile, data_entry_name
+            ])
+            
+            st.success("تم حفظ البيانات بنجاح!")
+         # زر لتحميل البيانات كملف PDF
+        if st.button("تحميل كملف PDF"):
+            # جمع البيانات المدخلة في معجم (dictionary)
+            data = {
+                "رقم الحاسبة": computer_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "تاريخ الإحالة": str(referral_date),
+                "مدة الإحالة": referral_duration,
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # الملفات المرفقة
+            images = {
+                "نسخة من الإحالة": referral_copy,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقه السكن/ الوجه": housing_card_front,
+                "بطاقه السكن/الضهر": housing_card_back
+            }
+            data["title"] = "نموذج بيانات العامل بصفة شراء خدمات"
+            # إنشاء ملف PDF باستخدام التابع generate_pdf
+            pdf_file_path = generate_pdf(data, images)
+
+            # عرض زر لتحميل ملف PDF
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل كملف PDF",
+                    data=pdf_file,
+                    file_name="بيانات_العامل_شراء_خدمات.pdf",
+                    mime="application/pdf"
+                )
+        
+    else:
+        if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
+            st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
+
+
