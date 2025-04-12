@@ -188,43 +188,7 @@ def load_css():
     """
     st.markdown(f"<style>{css_code}</style>", unsafe_allow_html=True)
 
-# دالة لتحميل خلفية الصورة للصفحة الرئيسية كخلفية شاملة شفافة
-def add_background(image_file):
-    with open(image_file, "rb") as img:
-        encoded = base64.b64encode(img.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-          .background {{
-             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url("data:image/png;base64,{encoded}");
-            background-size: 80% 100%; /* يضمن تغطية الشاشة بالكامل */
-            background-position: left center;
-            background-repeat: no-repeat;
-            opacity: 0.3; /* ضبط الشفافية حسب الحاجة */
-        }}
-            
-           
 
-        .main-title {{
-            font-size: 35px;
-            font-weight: bold;
-            text-align: right;
-            color: #333;
-            margin-top: 20px;
-            z-index: 1;
-            position: relative;
-        }}
-        </style>
-        
-        <div class="background"></div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 # تحميل CSS
 load_css()
@@ -240,7 +204,6 @@ page = st.sidebar.selectbox("اختر الصفحة", ["الصفحة الرئيس
 
 
 if page == "الصفحة الرئيسية":
-    add_background("background.jpg")
 
     # الشعار والعنوان
     logo_path = "logo.jpg"
