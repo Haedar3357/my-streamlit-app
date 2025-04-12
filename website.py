@@ -461,18 +461,19 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
 
     if user_password in passwords:  # التحقق من وجود كلمة السر في القائمة
         # الحقول المطلوبة
-        computer_no = st.text_input("رقم الحاسبة")
+        computer_no = st.text_input("الحاسبة /رقم")
         department = st.text_input("القسم")
+        subdepa = st.text_input("الشعبة")
+        special = st.text_input("الاختصاص")
         full_name = st.text_input("الإسم الرباعي واللقب")
+        job_loc = st.text_input("موقع العمل")
+        job_type = st.text_input("نوع الدولم")
         mother_name = st.text_input("اسم الأم الثلاثي")
         birth_date = st.date_input("المواليد", min_value=datetime.date(1900, 1, 1), max_value=datetime.date.today())
         address = st.text_input("عنوان السكن")
-        nearby_landmark = st.text_input("أقرب نقطه دالة")
-        referral_date = st.date_input("تاريخ الإحالة")
-        referral_duration = st.number_input("مدة الإحالة", min_value=1, step=1)
-        referral_copy = st.file_uploader("ارفاق نسخة من الإحالة", type=["jpg", "jpeg", "png", "pdf"])
         permit_number = st.text_input("رقم التصريح")
         permit_copy = st.file_uploader("ارفاق نسخة من التصريح", type=["jpg", "jpeg", "png", "pdf"])
+        bsc_copy = st.file_uploader("نسخة من الوثيقه( بكالوريوس)(دبلوم)", type=["jpg", "jpeg", "png", "pdf"])
         national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه", type=["jpg", "jpeg", "png", "pdf"])
         national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر", type=["jpg", "jpeg", "png", "pdf"])
         housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه", type=["jpg", "jpeg", "png", "pdf"])
@@ -484,15 +485,15 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
         if st.button("حفظ البيانات"):
             # رفع الملفات إلى Google Drive والحصول على الروابط
             file_links = upload_files([
-                referral_copy, permit_copy, national_id_front, national_id_back, 
-                housing_card_front, housing_card_back
+                permit_copy, national_id_front, national_id_back, 
+                housing_card_front, housing_card_back, bsc_copy
             ])
             
             # إضافة البيانات إلى Google Sheets
             worksheet = sh_service.sheet1
             worksheet.append_row([
-                computer_no, department, full_name, mother_name, str(birth_date), 
-                address, nearby_landmark, str(referral_date), str(referral_duration), 
+                computer_no, department,  full_name, job_loc, job_type, special,  mother_name, str(birth_date), 
+                address, nearby_landmark, subdepa, mother_name,
                 file_links[0], permit_number, file_links[1], file_links[2], 
                 file_links[3], file_links[4], file_links[5], mobile, data_entry_name
             ])
