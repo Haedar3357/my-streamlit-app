@@ -460,74 +460,82 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
     user_password = st.text_input("أدخل كلمة السر", type="password")
 
     if user_password in passwords:  # التحقق من وجود كلمة السر في القائمة
-        # الحقول المطلوبة
+        # الحقول المطلوبة حسب الترتيب الجديد
         computer_no = st.text_input("الحاسبة /رقم")
-        department = st.text_input("القسم")
-        subdepa = st.text_input("الشعبة")
-        special = st.text_input("الاختصاص")
         full_name = st.text_input("الإسم الرباعي واللقب")
-        job_loc = st.text_input("موقع العمل")
-        job_type = st.text_input("نوع الدولم")
         mother_name = st.text_input("اسم الأم الثلاثي")
         birth_date = st.date_input("المواليد", min_value=datetime.date(1900, 1, 1), max_value=datetime.date.today())
         address = st.text_input("عنوان السكن")
+        nearby_landmark = st.text_input("أقرب نقطه دالة")
+        department = st.text_input("القسم")
+        subdepa = st.text_input("الشعبة")
+        special = st.text_input("الاختصاص")
+        job_loc = st.text_input("موقع العمل")
+        job_type = st.text_input("نوع الدوام")
+
+        bsc_copy = st.file_uploader("نسخة من الوثيقه( بكالوريوس)(دبلوم)", type=["jpg", "jpeg", "png", "pdf"])
         permit_number = st.text_input("رقم التصريح")
         permit_copy = st.file_uploader("ارفاق نسخة من التصريح", type=["jpg", "jpeg", "png", "pdf"])
-        bsc_copy = st.file_uploader("نسخة من الوثيقه( بكالوريوس)(دبلوم)", type=["jpg", "jpeg", "png", "pdf"])
         national_id_front = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الواجهه", type=["jpg", "jpeg", "png", "pdf"])
         national_id_back = st.file_uploader("ارفاق نسخة من البطاقة الوطنية/الضهر", type=["jpg", "jpeg", "png", "pdf"])
         housing_card_front = st.file_uploader("ارفاق نسخة من بطاقه السكن/ الوجه", type=["jpg", "jpeg", "png", "pdf"])
         housing_card_back = st.file_uploader("ارفاق نسخة من بطاقه السكن/الضهر", type=["jpg", "jpeg", "png", "pdf"])
+
         mobile = st.text_input("رقم الموبايل")
         data_entry_name = st.text_input("اسم مدخل البيانات")
-        
+
         # زر الحفظ
         if st.button("حفظ البيانات"):
             # رفع الملفات إلى Google Drive والحصول على الروابط
             file_links = upload_files([
-                permit_copy, national_id_front, national_id_back, 
-                housing_card_front, housing_card_back, bsc_copy
+                bsc_copy, permit_copy, national_id_front, national_id_back,
+                housing_card_front, housing_card_back
             ])
             
             # إضافة البيانات إلى Google Sheets
             worksheet = sh_service.sheet1
             worksheet.append_row([
-                computer_no, department,  full_name, job_loc, job_type, special,  mother_name, str(birth_date), 
-                address, nearby_landmark, subdepa, mother_name,
-                file_links[0], permit_number, file_links[1], file_links[2], 
-                file_links[3], file_links[4], file_links[5], mobile, data_entry_name
+                computer_no, full_name, mother_name, str(birth_date), address,
+                nearby_landmark, department, subdepa, special, job_loc, job_type,
+                file_links[0],  # bsc_copy
+                permit_number, file_links[1],  # permit_copy
+                file_links[2], file_links[3],  # national_id front/back
+                file_links[4], file_links[5],  # housing card front/back
+                mobile, data_entry_name
             ])
-            
+
             st.success("تم حفظ البيانات بنجاح!")
-         # زر لتحميل البيانات كملف PDF
+
+        # زر لتحميل البيانات كملف PDF
         if st.button("تحميل كملف PDF"):
-            # جمع البيانات المدخلة في معجم (dictionary)
+            # جمع البيانات في معجم
             data = {
                 "رقم الحاسبة": computer_no,
-                "القسم": department,
                 "الإسم الرباعي واللقب": full_name,
                 "اسم الأم الثلاثي": mother_name,
                 "المواليد": str(birth_date),
                 "عنوان السكن": address,
                 "أقرب نقطه دالة": nearby_landmark,
-                "تاريخ الإحالة": str(referral_date),
-                "مدة الإحالة": referral_duration,
+                "القسم": department,
+                "الشعبة": subdepa,
+                "الاختصاص": special,
+                "موقع العمل": job_loc,
+                "نوع الدوام": job_type,
                 "رقم التصريح": permit_number,
                 "رقم الموبايل": mobile,
-                "اسم مدخل البيانات": data_entry_name
+                "اسم مدخل البيانات": data_entry_name,
+                "title": "نموذج بيانات العامل بصفة شراء خدمات"
             }
 
-            # الملفات المرفقة
             images = {
-                "نسخة من الإحالة": referral_copy,
+                "نسخة من الوثيقه( بكالوريوس)(دبلوم)": bsc_copy,
                 "نسخة من التصريح": permit_copy,
                 "البطاقة الوطنية/الواجهه": national_id_front,
                 "البطاقة الوطنية/الضهر": national_id_back,
                 "بطاقه السكن/ الوجه": housing_card_front,
                 "بطاقه السكن/الضهر": housing_card_back
             }
-            data["title"] = "نموذج بيانات العامل بصفة شراء خدمات"
-            # إنشاء ملف PDF باستخدام التابع generate_pdf
+
             pdf_file_path = generate_pdf(data, images)
 
             # عرض زر لتحميل ملف PDF
@@ -538,9 +546,7 @@ elif page == "إضافة بيانات العاملين بصفة شراء خدم�
                     file_name="بيانات_العامل_شراء_خدمات.pdf",
                     mime="application/pdf"
                 )
-        
+
     else:
-        if user_password:  # فقط إظهار الرسالة إذا كانت هناك محاولة إدخال كلمة سر
+        if user_password:
             st.error("كلمة السر غير صحيحة. يرجى المحاولة مرة أخرى.")
-
-
