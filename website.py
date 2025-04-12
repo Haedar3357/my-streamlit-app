@@ -192,7 +192,7 @@ def load_css():
         color: #333;
     }
     
-    /* الأجزاء الجديدة المطلوبة */
+    
     body {
         background: #f8f9fa !important;
     }
@@ -259,18 +259,7 @@ def validate_required(fields):
             missing.append(name)
     return missing
 
-def add_background(image_path):
-    with open(image_path, "rb") as f:
-        img_data = f.read()
-    b64 = base64.b64encode(img_data).decode()
-    st.markdown(f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/jpg;base64,{b64}");
-            background-size: cover;
-        }}
-        </style>
-    """, unsafe_allow_html=True)
+
 
 def upload_files(files):
     return [f"file_{i}_link" for i in range(len(files))]
@@ -289,7 +278,6 @@ page = st.sidebar.selectbox("اختر الصفحة", [
 
 # ---------------------- الصفحة الرئيسية ----------------------
 if page == "الصفحة الرئيسية":
-    add_background("background.jpg")
     with open("logo.jpg", "rb") as f:
         logo_b64 = base64.b64encode(f.read()).decode()
     st.markdown(f"""
