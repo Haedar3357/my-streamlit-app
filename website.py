@@ -278,14 +278,22 @@ page = st.sidebar.selectbox("اختر الصفحة", [
 
 # ---------------------- الصفحة الرئيسية ----------------------
 if page == "الصفحة الرئيسية":
-    with open("logo.jpg", "rb") as f:
-        logo_b64 = base64.b64encode(f.read()).decode()
-    st.markdown(f"""
-        <div style="display: flex; align-items: center; direction: rtl;">
-            <img src="data:image/png;base64,{logo_b64}" style="height: 120px; margin-left: 20px;">
-            <h1 style="color: #2c3e50;">نظام إدارة بيانات العاملين</h1>
+
+    # الشعار والعنوان
+    logo_path = "logo.jpg"
+    with open(logo_path, "rb") as img_file:
+        logo_encoded = base64.b64encode(img_file.read()).decode()
+    st.markdown(
+        f"""
+        <div class="header-container" style="flex-direction: row-reverse; text-align: left;">
+            <img src="data:image/png;base64,{logo_encoded}" class="logo" style="margin-right: 10px;">
+            <span class="main-title">
+                إضافة بيانات العاملين في شركة مصافي الشمال
+            </span>
         </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
 # ---------------------- صفحة الموظفين ----------------------
 elif page == "إضافة بيانات الموظفين":
