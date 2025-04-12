@@ -240,7 +240,7 @@ def validate_required(fields):
     """التحقق من جميع الحقول الإلزامية"""
     missing = []
     for name, value in fields.items():
-        if isinstance(value, (str, int)) and (not value or (isinstance(value, str) and value.strip() == ""):
+        if (isinstance(value, (str, int)) and (not value or (isinstance(value, str) and value.strip() == "")):
             missing.append(name)
         elif isinstance(value, st.runtime.uploaded_file_manager.UploadedFile) and not value:
             missing.append(name)
