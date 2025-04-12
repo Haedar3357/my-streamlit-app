@@ -375,7 +375,49 @@ elif page == "إضافة بيانات الموظفين":
                         st.success("تم الحفظ بنجاح!")
                     except Exception as e:
                         st.error(f"خطأ: {str(e)}")
-    
+            if st.button("تحميل كملف PDF"):
+            # البيانات المراد إضافتها في ملف PDF
+            data = {
+                "رقم الحاسبة": computer_no,
+                "رقم الشعار": badge_no,
+                "القسم": department,
+                "الإسم الرباعي واللقب": full_name,
+                "اسم الأم الثلاثي": mother_name,
+                "المواليد": str(birth_date),
+                "الحالة الزوجية": marital_status,
+                "عدد الأفراد": family_count,
+                "اول طفل": first_child,
+                "ثاني طفل": second_child,
+                "ثالث طفل": third_child,
+                "رابع طفل": fourth_child,
+                "عنوان السكن": address,
+                "أقرب نقطه دالة": nearby_landmark,
+                "تاريخ التعيين": str(appointment_date),
+                "رقم التصريح": permit_number,
+                "رقم الموبايل": mobile,
+                "اسم مدخل البيانات": data_entry_name
+            }
+
+            # إعداد الملفات
+            images = {
+                "عقد الزواج": marriage_contract if marital_status == "نعم" else None,
+                "الامر الاداري للتعيين": administrative_order,
+                "نسخة من التصريح": permit_copy,
+                "البطاقة الوطنية/الواجهه": national_id_front,
+                "البطاقة الوطنية/الضهر": national_id_back,
+                "بطاقة السكن/الوجه": housing_card_front,
+                "بطاقة السكن/الضهر": housing_card_back
+            }
+            data["title"] = "نموذج بيانات الموظف"
+            # إنشاء ملف PDF
+            pdf_file_path = generate_pdf(data, images)
+            with open(pdf_file_path, "rb") as pdf_file:
+                st.download_button(
+                    label="اضغط هنا للتحميل",
+                    data=pdf_file,
+                    file_name="بيانات_الموظف.pdf",
+                    mime="application/pdf"
+                )
     elif password:
         st.error("كلمة المرور غير صحيحة!")
 
