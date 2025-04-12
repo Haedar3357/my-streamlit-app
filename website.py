@@ -145,6 +145,7 @@ def upload_files(files):
         else:
             links.append(None)
     return links
+    
 def load_css():
     css_code = """
     /* تكبير حجم الخط وتغيير اتجاه النصوص للموقع بالكامل إلى اليمين */
@@ -155,27 +156,32 @@ def load_css():
     }
     /* تكبير حجم العناوين */
     .main-title, h1, h2, h3, h4, h5, h6 {
-        font-size: 24px; /* حجم أكبر للعناوين */
+        font-size: 24px;
         font-weight: bold;
         color: #333;
     }
     /* تكبير حجم النصوص فوق حقول الإدخال */
     label {
-        font-size: 20px; /* تكبير حجم النص */
+        font-size: 20px;
         font-weight: bold;
         color: #333;
     }
     /* محاذاة الشعار بجانب العنوان */
     .header-container {
-        display: flex;
-        align-items: left;
-        justify-content: flex-end;
-        margin-top: 20px;
+    display: flex;
+    align-items: center; /* توسيط عمودي */
+    justify-content: flex-start; /* محاذاة لليسار */
+    gap: 20px; /* مسافة بين العناصر */
+    padding: 15px;
+    background: #ffffff; /* خلفية بيضاء */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* ظل ناعم */
+    border-radius: 8px;
+    margin-bottom: 30px;
     }
     .logo {
         width: 115px;
         height: auto;
-        margin-left: 15px; /* فراغ بين الشعار والعنوان */
+        margin-left: 15px;
     }
     .footer {
         position: fixed;
@@ -185,46 +191,51 @@ def load_css():
         font-size: 14px;
         color: #333;
     }
+    
+    /* الأجزاء الجديدة المطلوبة */
+    body {
+        background: #f8f9fa !important;
+    }
+    
+    .stTextInput>div>div>input,
+    .stNumberInput>div>div>input,
+    .stDateInput>div>div>input {
+        font-size: 18px !important;
+        padding: 12px !important;
+    }
+    
+    .stButton>button {
+        width: 100% !important;
+        padding: 15px !important;
+        font-size: 20px !important;
+        background: #007bff !important;
+        transition: 0.3s !important;
+    }
+    
+    .stButton>button:hover {
+        opacity: 0.9 !important;
+        transform: translateY(-2px) !important;
+    }
+    
+    .stFileUploader {
+        border: 2px dashed #ced4da !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
+        background: #ffffff !important;
+    }
+    
+    .stFileUploader:hover {
+        border-color: #007bff !important;
+    }
+    
+    .stDateInput>div>div>input {
+        text-align: right !important;
+        direction: rtl !important;
+    }
     """
     st.markdown(f"<style>{css_code}</style>", unsafe_allow_html=True)
 
-# دالة لتحميل خلفية الصورة للصفحة الرئيسية كخلفية شاملة شفافة
-def add_background(image_file):
-    with open(image_file, "rb") as img:
-        encoded = base64.b64encode(img.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-          .background {{
-             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url("data:image/png;base64,{encoded}");
-            background-size: 80% 100%; /* يضمن تغطية الشاشة بالكامل */
-            background-position: left center;
-            background-repeat: no-repeat;
-            opacity: 0.3; /* ضبط الشفافية حسب الحاجة */
-        }}
-            
-           
 
-        .main-title {{
-            font-size: 35px;
-            font-weight: bold;
-            text-align: right;
-            color: #333;
-            margin-top: 20px;
-            z-index: 1;
-            position: relative;
-        }}
-        </style>
-        
-        <div class="background"></div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 # تحميل CSS
 load_css()
